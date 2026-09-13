@@ -46,12 +46,14 @@ class MockOfflineProvider(BaseLLMProvider):
             "đăng ký vé tháng nếu" in prompt_lower
             and (request_count > 1 or "monthly_pass_available" in prompt_lower)
         ):
+            name_match = re.search(r"tôi là\s+(.+?),\s*số điện thoại", prompt, re.IGNORECASE)
+            phone_match = re.search(r"số điện thoại\s*([0-9]{9,11})", prompt, re.IGNORECASE)
             return {
                 "type": "tool_call",
                 "tool_name": "register_monthly_pass",
                 "arguments": {
-                    "full_name": "Khách hàng VinBus",
-                    "phone": "0900000000",
+                    "full_name": name_match.group(1).strip() if name_match else "Nguyễn Minh Anh",
+                    "phone": phone_match.group(1) if phone_match else "0901234567",
                     "route_id": "VB02"
                 },
                 "thought": "Tuyến VB02 hỗ trợ vé tháng. Tôi sẽ tiếp tục đăng ký vé tháng cho khách hàng."

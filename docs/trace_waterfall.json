@@ -4,8 +4,8 @@
     "query": "VinBus hiện có những loại vé tháng nào và điều kiện đăng ký ra sao?",
     "action_type": "FINAL_ANSWER",
     "thought": "Gemini phản hồi trực tiếp bằng văn bản (không cần gọi công cụ).",
-    "output": "Hiện nay, dịch vụ xe buýt điện VinBus cung cấp các loại vé tháng và các điều kiện đăng ký như sau:\n\n### 1. Các loại vé tháng VinBus:\n* **Vé tháng 1 tuyến:** Áp dụng cho hành khách chỉ di chuyển cố định trên một tuyến xe buýt nhất định.\n* **Vé tháng liên tuyến:** Áp dụng cho hành khách có nhu cầu di chuyển trên nhiều tuyến buýt khác nhau trong hệ thống.\n\n---\n\n### 2. Phân loại đối tượng & Mức giá ưu đãi:\n* **Đối tượng phổ thông:** Áp dụng cho mọi hành khách thông thường.\n* **Đối tượng ưu tiên (Được giảm giá hoặc miễn phí theo quy định):**\n  * Học sinh, sinh viên các trường phổ thông, trung cấp, cao đẳng, đại học.\n  * Người cao tuổi (từ 60 tuổi trở lên).\n  * Người có công với cách mạng, người khuyết tật.\n  * Nhân viên nội bộ / cư dân tại một số khu đô thị Vinhomes (theo chính sách từng thời điểm).\n\n---\n\n### 3. Điều kiện & Thông tin cần chuẩn bị khi đăng ký:\n* **Thông tin cá nhân:** Họ và tên, số điện thoại liên hệ, ảnh chân dung/ảnh thẻ.\n* **Giấy tờ xác minh (đối với đối tượng ưu tiên):**\n  * Học sinh/Sinh viên: Thẻ học sinh/sinh viên còn hiệu lực hoặc xác nhận của nhà trường.\n  * Người cao tuổi/Đối tượng chính sách: Bản sao/chụp CCCD hoặc giấy tờ chứng minh tương ứng.\n* **Mã tuyến xe:** Chọn đúng tuyến cần đăng ký (nếu đăng ký vé 1 tuyến).\n\n---\n\n💡 **Lưu ý:** Nếu quý khách muốn đăng ký vé tháng ngay bây giờ, vui lòng cung cấp **Họ và tên**, **Số điện thoại** và **Tuyến xe (mã tuyến)** muốn đăng ký để em hỗ trợ nhé!",
-    "latency_ms": 7351.9
+    "output": "Hiện nay, VinBus cung cấp các loại vé tháng và chính sách ưu đãi như sau:\n\n---\n\n### **1. Các loại vé tháng VinBus**\n\n1. **Vé tháng 1 tuyến (Tuyến đơn):**\n   * **Đối tượng ưu tiên (Được giảm giá):** Học sinh, sinh viên, người cao tuổi (từ 60 tuổi trở lên), người có công với cách mạng, công nhân các khu công nghiệp.\n   * **Đối tượng không ưu tiên (Tập thể/Cá nhân đại trà):** Dành cho tất cả các hành khách còn lại.\n\n2. **Vé tháng liên tuyến:**\n   * Áp dụng đi lại trên tất cả các tuyến VinBus (hoặc hệ thống xe buýt công cộng áp dụng liên tuyến).\n   * Có mức giá ưu đãi dành riêng cho **đối tượng ưu tiên** và **đối tượng không ưu tiên**.\n\n---\n\n### **2. Điều kiện và thủ tục đăng ký**\n\n* **Đối với hành khách thuộc diện ưu tiên:**\n  * Cần chuẩn bị/tải lên giấy tờ chứng minh đối tượng ưu tiên (như *Thẻ học sinh/sinh viên còn hạn*, *Căn cước công dân đối với người cao tuổi*, *Giấy xác nhận công nhân/người có công*...).\n  * Ảnh chân dung (kích thước 2x3 hoặc 3x4).\n* **Đối với hành khách thông thường:**\n  * Chỉ cần cung cấp thông tin cá nhân (*Họ và tên*, *Số điện thoại*, *Tuyến xe đăng ký*) và ảnh chân dung.\n\n---\n\n💡 **Lưu ý:** Nếu quý khách muốn đăng ký vé tháng ngay, vui lòng cung cấp **Họ và tên**, **Số điện thoại** và **Mã tuyến xe (hoặc tên tuyến)** mà quý khách muốn đăng ký để em hỗ trợ nhé!",
+    "latency_ms": 7261.81
   },
   {
     "step": 1,
@@ -13,8 +13,8 @@
     "action_type": "TOOL_EXECUTION",
     "tool_name": "route_query",
     "arguments": {
-      "origin": "Vinhomes Central Park",
-      "destination": "Bến xe Miền Đông mới"
+      "destination": "Bến xe Miền Đông mới",
+      "origin": "Vinhomes Central Park"
     },
     "observation": {
       "status": "SUCCESS",
@@ -33,7 +33,7 @@
         "monthly_pass_available": true
       }
     },
-    "latency_ms": 1874.82
+    "latency_ms": 2333.46
   },
   {
     "step": 2,
@@ -61,7 +61,7 @@
       "route_id": "VB01",
       "message": "Đăng ký vé tháng thành công cho Nguyễn Minh Anh trên tuyến VB01."
     },
-    "latency_ms": 2732.63
+    "latency_ms": 2380.26
   },
   {
     "step": 2,
@@ -73,12 +73,12 @@
   },
   {
     "step": 1,
-    "query": "Tôi thường đi từ Landmark 81 đến Đại học Quốc gia TP.HCM. Hãy tìm tuyến VinBus phù hợp, kiểm tra lịch chuyến gần nhất và đăng ký vé tháng nếu tuyến đó hỗ trợ.",
+    "query": "Tôi là Nguyễn Minh Anh, số điện thoại 0901234567. Tôi thường đi từ Landmark 81 đến Đại học Quốc gia TP.HCM. Hãy tìm tuyến phù hợp và đăng ký vé tháng nếu tuyến đó hỗ trợ.",
     "action_type": "TOOL_EXECUTION",
     "tool_name": "route_query",
     "arguments": {
-      "origin": "Landmark 81",
-      "destination": "Đại học Quốc gia TP.HCM"
+      "destination": "Đại học Quốc gia TP.HCM",
+      "origin": "Landmark 81"
     },
     "observation": {
       "status": "SUCCESS",
@@ -97,34 +97,34 @@
         "monthly_pass_available": true
       }
     },
-    "latency_ms": 2542.01
+    "latency_ms": 2656.23
   },
   {
     "step": 2,
-    "query": "Tôi thường đi từ Landmark 81 đến Đại học Quốc gia TP.HCM. Hãy tìm tuyến VinBus phù hợp, kiểm tra lịch chuyến gần nhất và đăng ký vé tháng nếu tuyến đó hỗ trợ.",
+    "query": "Tôi là Nguyễn Minh Anh, số điện thoại 0901234567. Tôi thường đi từ Landmark 81 đến Đại học Quốc gia TP.HCM. Hãy tìm tuyến phù hợp và đăng ký vé tháng nếu tuyến đó hỗ trợ.",
     "action_type": "TOOL_EXECUTION",
     "tool_name": "register_monthly_pass",
     "arguments": {
-      "full_name": "Khách hàng VinBus",
-      "phone": "0900000000",
+      "phone": "0901234567",
+      "full_name": "Nguyễn Minh Anh",
       "route_id": "VB02"
     },
     "observation": {
       "status": "SUCCESS",
-      "booking_id": "MP-0900000000-VB02",
-      "full_name": "Khách hàng VinBus",
-      "phone": "0900000000",
+      "booking_id": "MP-0901234567-VB02",
+      "full_name": "Nguyễn Minh Anh",
+      "phone": "0901234567",
       "route_id": "VB02",
-      "message": "Đăng ký vé tháng thành công cho Khách hàng VinBus trên tuyến VB02."
+      "message": "Đăng ký vé tháng thành công cho Nguyễn Minh Anh trên tuyến VB02."
     },
-    "latency_ms": 5099.21
+    "latency_ms": 3035.26
   },
   {
     "step": 3,
-    "query": "Tôi thường đi từ Landmark 81 đến Đại học Quốc gia TP.HCM. Hãy tìm tuyến VinBus phù hợp, kiểm tra lịch chuyến gần nhất và đăng ký vé tháng nếu tuyến đó hỗ trợ.",
+    "query": "Tôi là Nguyễn Minh Anh, số điện thoại 0901234567. Tôi thường đi từ Landmark 81 đến Đại học Quốc gia TP.HCM. Hãy tìm tuyến phù hợp và đăng ký vé tháng nếu tuyến đó hỗ trợ.",
     "action_type": "FINAL_ANSWER",
     "thought": "Tổng hợp kết quả từ MCP Server thành công.",
-    "output": "Đăng ký vé tháng thành công cho Khách hàng VinBus trên tuyến VB02. Mã đăng ký: MP-0900000000-VB02.",
+    "output": "Đăng ký vé tháng thành công cho Nguyễn Minh Anh trên tuyến VB02. Mã đăng ký: MP-0901234567-VB02.",
     "latency_ms": 10.0
   },
   {
@@ -133,21 +133,21 @@
     "action_type": "TOOL_EXECUTION",
     "tool_name": "route_query",
     "arguments": {
-      "origin": "Sân bay Tân Sơn Nhất",
-      "destination": "điểm không có trong mạng lưới VinBus"
+      "destination": "Điểm ngoài mạng lưới VinBus",
+      "origin": "Sân bay Tân Sơn Nhất"
     },
     "observation": {
       "status": "NOT_FOUND",
-      "message": "Không tìm thấy tuyến VinBus phù hợp từ 'Sân bay Tân Sơn Nhất' đến 'điểm không có trong mạng lưới VinBus'."
+      "message": "Không tìm thấy tuyến VinBus phù hợp từ 'Sân bay Tân Sơn Nhất' đến 'Điểm ngoài mạng lưới VinBus'."
     },
-    "latency_ms": 5853.5
+    "latency_ms": 6753.77
   },
   {
     "step": 2,
     "query": "Tôi muốn đi từ Sân bay Tân Sơn Nhất đến một điểm không có trong mạng lưới VinBus. Hãy tìm tuyến phù hợp.",
     "action_type": "FINAL_ANSWER",
     "thought": "Tổng hợp kết quả từ MCP Server thành công.",
-    "output": "Không tìm thấy tuyến VinBus phù hợp từ 'Sân bay Tân Sơn Nhất' đến 'điểm không có trong mạng lưới VinBus'.",
+    "output": "Không tìm thấy tuyến VinBus phù hợp từ 'Sân bay Tân Sơn Nhất' đến 'Điểm ngoài mạng lưới VinBus'.",
     "latency_ms": 10.0
   }
 ]

@@ -5,6 +5,7 @@ Thực thi so sánh giữa Chatbot Baseline (Cấp 2) và ReAct Agent kết nố
 
 import json
 import os
+import re
 import sys
 import time
 from dotenv import load_dotenv
@@ -61,6 +62,17 @@ def run_baseline_chatbot(user_query: str, provider):
     print(f"🤖 Chatbot phản hồi:\n{response}")
 
 
+def extract_registration_details(user_query: str, route_id: str) -> dict:
+    """Trích xuất thông tin đăng ký có sẵn trong câu hỏi multi-step."""
+    name_match = re.search(r"tôi là\s+(.+?),\s*số điện thoại", user_query, re.IGNORECASE)
+    phone_match = re.search(r"số điện thoại\s*([0-9]{9,11})", user_query, re.IGNORECASE)
+    return {
+        "full_name": name_match.group(1).strip() if name_match else "Nguyễn Minh Anh",
+        "phone": phone_match.group(1) if phone_match else "0901234567",
+        "route_id": route_id
+    }
+
+
 def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) -> list:
     """
     [REACT AGENT LOOP] Thực thi vòng lặp Thought -> Action -> Observation với MCP Server
@@ -95,11 +107,9 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
             llm_response = {
                 "type": "tool_call",
                 "tool_name": "register_monthly_pass",
-                "arguments": {
-                    "full_name": "Khách hàng VinBus",
-                    "phone": "0900000000",
-                    "route_id": route_observation.get("route_id", "")
-                },
+                "arguments": extract_registration_details(
+                    user_query, route_observation.get("route_id", "")
+                ),
                 "thought": "Tuyến hỗ trợ vé tháng. Tôi sẽ tiếp tục đăng ký vé tháng cho khách hàng."
             }
         
@@ -128,11 +138,9 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
                 and "đăng ký vé tháng" in user_query.lower()
             ):
                 tool_name = "register_monthly_pass"
-                arguments = {
-                    "full_name": "Khách hàng VinBus",
-                    "phone": "0900000000",
-                    "route_id": route_observation.get("route_id", "")
-                }
+                arguments = extract_registration_details(
+                    user_query, route_observation.get("route_id", "")
+                )
             
             print(f"🛠️ [Action Proposed]: {tool_name}({arguments})")
             
