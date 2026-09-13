@@ -2,7 +2,7 @@
 
 > **Họ và Tên Học viên:** Phan Trọng Hoàn 
 > **Mã Sinh Viên / Mã Học viên:** 2A202602954  
-> **Chủ đề Lựa chọn:** Trợ lý Dịch vụ Khách hàng VinBus: Tra cứu lộ trình tuyến xe bus điện và đăng ký vé tháng.
+> **Chủ đề Lựa chọn:** Trợ lý Dịch vụ Khách hàng VinBus: Tra cứu lộ trình tuyến xe bus điện và đăng ký vé tháng
 
 ---
 

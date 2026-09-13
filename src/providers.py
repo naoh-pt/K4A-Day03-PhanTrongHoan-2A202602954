@@ -28,7 +28,7 @@ class BaseLLMProvider:
 
 
 class MockOfflineProvider(BaseLLMProvider):
-    """Offline Mock Provider dùng để chạy thử mà không tốn API Key"""
+    """Offline Mock Provider dùng để chạy thử mà không tốn API key"""
     def __init__(self):
         self.model_name = "Offline-Mock-Model-2026"
         self._request_counts = {}
