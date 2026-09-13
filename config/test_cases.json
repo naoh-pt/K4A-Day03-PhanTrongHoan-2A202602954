@@ -1,0 +1,37 @@
+[
+  {
+    "id": "TC01",
+    "type": "direct_query",
+    "question": "VinBus hiện có những loại vé tháng nào và điều kiện đăng ký ra sao?",
+    "expected_behavior": "Agent trả lời trực tiếp thông tin chung về các loại vé tháng, giá vé và điều kiện đăng ký mà không cần gọi Tool.",
+    "complexity": "Low"
+  },
+  {
+    "id": "TC02",
+    "type": "single_tool_query",
+    "question": "Tôi muốn đi từ Vinhomes Central Park đến Bến xe Miền Đông mới. Có tuyến VinBus nào phù hợp không?",
+    "expected_behavior": "Agent gọi Tool tra cứu lộ trình với điểm đi và điểm đến, sau đó trả về tuyến xe, các điểm dừng chính và thời gian dự kiến.",
+    "complexity": "Medium"
+  },
+  {
+    "id": "TC03",
+    "type": "monthly_pass_registration",
+    "question": "Hãy đăng ký vé tháng VinBus cho tôi. Tôi tên Nguyễn Minh Anh, số điện thoại 0901234567 và muốn sử dụng tuyến VB01.",
+    "expected_behavior": "Agent thu thập đủ thông tin khách hàng, gọi Tool đăng ký vé tháng với họ tên, số điện thoại và mã tuyến, sau đó trả về mã đăng ký.",
+    "complexity": "Medium"
+  },
+  {
+    "id": "TC04",
+    "type": "multi_step_reasoning",
+    "question": "Tôi thường đi từ Landmark 81 đến Đại học Quốc gia TP.HCM. Hãy tìm tuyến VinBus phù hợp, kiểm tra lịch chuyến gần nhất và đăng ký vé tháng nếu tuyến đó hỗ trợ.",
+    "expected_behavior": "Agent thực hiện chuỗi ReAct: tra cứu tuyến, kiểm tra lịch chuyến, xác nhận tuyến có hỗ trợ vé tháng, rồi thực hiện đăng ký nếu đủ điều kiện.",
+    "complexity": "High"
+  },
+  {
+    "id": "TC05",
+    "type": "edge_case_handling",
+    "question": "Tôi muốn đi từ Sân bay Tân Sơn Nhất đến một điểm không có trong mạng lưới VinBus. Hãy tìm tuyến phù hợp.",
+    "expected_behavior": "Agent nhận kết quả không tìm thấy tuyến hoặc điểm dừng, thông báo rõ ràng rằng chưa có tuyến phù hợp và không được tự bịa ra lộ trình.",
+    "complexity": "Medium"
+  }
+]

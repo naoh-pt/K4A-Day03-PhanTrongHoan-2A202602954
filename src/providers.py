@@ -6,6 +6,7 @@ Hỗ trợ Native Tool Calling và chuyển đổi linh hoạt qua biến môi t
 import os
 import sys
 import json
+import re
 from typing import Dict, Any, List
 from dotenv import load_dotenv
 
@@ -30,41 +31,92 @@ class MockOfflineProvider(BaseLLMProvider):
     """Offline Mock Provider dùng để chạy thử mà không tốn API Key"""
     def __init__(self):
         self.model_name = "Offline-Mock-Model-2026"
+        self._request_counts = {}
 
     def generate(self, prompt: str, system_prompt: str = "") -> str:
         return f"[Mock Chatbot Response]: Xin chào! Tôi đã nhận được câu hỏi '{prompt}'. (Chế độ Chatbot không có Tool tra cứu dữ liệu thời gian thực)."
 
     def generate_with_tools(self, prompt: str, tools_schema: List[Dict[str, Any]], system_prompt: str = "") -> Dict[str, Any]:
         prompt_lower = prompt.lower()
+        request_count = self._request_counts.get(prompt, 0) + 1
+        self._request_counts[prompt] = request_count
         
-        # Mô phỏng nhận diện intent gọi Tool
-        if "sv2026001" in prompt_lower and "đặt lịch" in prompt_lower:
+        # Mô phỏng nhận diện intent VinBus và trích xuất tham số cơ bản.
+        if (
+            "đăng ký vé tháng nếu" in prompt_lower
+            and (request_count > 1 or "monthly_pass_available" in prompt_lower)
+        ):
             return {
                 "type": "tool_call",
-                "tool_name": "schedule_appointment",
-                "arguments": {"student_id": "SV2026001", "datetime_str": "14:00 15/09/2026", "advisor_name": "PGS.TS Nguyễn Văn A"},
-                "thought": "Người dùng yêu cầu đặt lịch hẹn tư vấn cho sinh viên SV2026001. Tôi sẽ gọi tool schedule_appointment."
+                "tool_name": "register_monthly_pass",
+                "arguments": {
+                    "full_name": "Khách hàng VinBus",
+                    "phone": "0900000000",
+                    "route_id": "VB02"
+                },
+                "thought": "Tuyến VB02 hỗ trợ vé tháng. Tôi sẽ tiếp tục đăng ký vé tháng cho khách hàng."
             }
-        elif "sv2026001" in prompt_lower or "tra cứu" in prompt_lower:
+
+        if "tìm tuyến" in prompt_lower or "lộ trình" in prompt_lower or "đi từ" in prompt_lower:
+            if "sân bay tân sơn nhất" in prompt_lower:
+                origin = "Sân bay Tân Sơn Nhất"
+                destination = "Điểm không có trong mạng lưới VinBus"
+            elif "landmark 81" in prompt_lower and "đại học quốc gia" in prompt_lower:
+                origin = "Landmark 81"
+                destination = "Đại học Quốc gia TP.HCM"
+            else:
+                origin = "Vinhomes Central Park"
+                destination = "Bến xe Miền Đông mới"
+
             return {
                 "type": "tool_call",
-                "tool_name": "academic_query",
-                "arguments": {"student_id": "SV2026001"},
-                "thought": "Người dùng muốn tra cứu thông tin học vụ của sinh viên SV2026001. Tôi sẽ gọi tool academic_query."
+                "tool_name": "route_query",
+                "arguments": {"origin": origin, "destination": destination},
+                "thought": f"Người dùng cần tra cứu lộ trình từ {origin} đến {destination}. Tôi sẽ gọi tool route_query."
             }
-        else:
+
+        if "điều kiện đăng ký" in prompt_lower or "giá vé" in prompt_lower:
             return {
                 "type": "text",
-                "content": f"[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-                "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool."
+                "content": "VinBus hỗ trợ thông tin vé tháng và điều kiện đăng ký. Bạn có thể cung cấp tuyến muốn sử dụng để tiếp tục đăng ký.",
+                "thought": "Câu hỏi chung về vé tháng, trả lời trực tiếp không cần gọi Tool."
             }
+
+        if "đăng ký" in prompt_lower and "vé tháng" in prompt_lower:
+            name_match = re.search(r"tên\s+(.+?),\s*số điện thoại", prompt, re.IGNORECASE)
+            phone_match = re.search(r"(?:số điện thoại|sđt)\s*([0-9]{9,11})", prompt, re.IGNORECASE)
+            route_match = re.search(r"tuyến\s+(VB\d+)", prompt, re.IGNORECASE)
+
+            full_name = name_match.group(1).strip() if name_match else "Nguyễn Minh Anh"
+            phone = phone_match.group(1) if phone_match else "0901234567"
+            route_id = route_match.group(1).upper() if route_match else "VB01"
+
+            return {
+                "type": "tool_call",
+                "tool_name": "register_monthly_pass",
+                "arguments": {"full_name": full_name, "phone": phone, "route_id": route_id},
+                "thought": f"Người dùng muốn đăng ký vé tháng tuyến {route_id}. Tôi sẽ gọi tool register_monthly_pass."
+            }
+
+        if "vé tháng" in prompt_lower:
+            return {
+                "type": "text",
+                "content": "VinBus hỗ trợ thông tin vé tháng và điều kiện đăng ký. Bạn có thể cung cấp tuyến muốn sử dụng để tiếp tục đăng ký.",
+                "thought": "Câu hỏi chung về vé tháng, trả lời trực tiếp không cần gọi Tool."
+            }
+
+        return {
+            "type": "text",
+            "content": "Tôi có thể hỗ trợ tra cứu lộ trình VinBus hoặc đăng ký vé tháng.",
+            "thought": "Chưa có đủ thông tin để gọi Tool VinBus."
+        }
 
 
 class GeminiProvider(BaseLLMProvider):
     """Google Gemini Provider (Native Tool Calling với Google GenAI SDK)"""
     def __init__(self, api_key: str = None, model: str = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
-        self.model_name = model or os.getenv("LLM_MODEL") or "gemini-2.5-flash"
+        self.model_name = model or os.getenv("LLM_MODEL") or "gemini-3.6-flash"
 
     def generate(self, prompt: str, system_prompt: str = "") -> str:
         if not self.api_key or self.api_key == "your_gemini_api_key_here":
@@ -80,7 +132,7 @@ class GeminiProvider(BaseLLMProvider):
 
     def generate_with_tools(self, prompt: str, tools_schema: List[Dict[str, Any]], system_prompt: str = "") -> Dict[str, Any]:
         if not self.api_key or self.api_key == "your_gemini_api_key_here":
-            print("ℹ️ [Gemini Provider]: Chưa tìm thấy GEMINI_API_KEY hợp lệ. Tự động chuyển sang Mock Offline.")
+            print("[Gemini Provider]: Chưa tìm thấy GEMINI_API_KEY hợp lệ. Tự động chuyển sang Mock Offline.")
             return MockOfflineProvider().generate_with_tools(prompt, tools_schema, system_prompt)
         
         try:

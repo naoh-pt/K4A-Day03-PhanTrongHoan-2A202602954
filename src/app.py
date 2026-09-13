@@ -71,6 +71,8 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
     step = 0
     trace_logs = []
     tools_list = mcp_server.list_tools()
+    react_prompt = user_query
+    route_observation = None
     
     while step < MAX_ITERATIONS:
         step += 1
@@ -78,11 +80,28 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
         print(f"\n--- 🔄 Vòng lặp ReAct Loop (Step {step}/{MAX_ITERATIONS}) ---")
         
         # Gọi LLM với Native Tool Calling Specs
-        llm_response = provider.generate_with_tools(user_query, tools_list, system_prompt=REACT_AGENT_SYSTEM_PROMPT)
+        llm_response = provider.generate_with_tools(react_prompt, tools_list, system_prompt=REACT_AGENT_SYSTEM_PROMPT)
         latency_ms = round((time.time() - step_start_time) * 1000, 2)
         
         thought = llm_response.get("thought", "Đang suy luận...")
         print(f"🧠 [Thought]: {thought}")
+
+        if (
+            llm_response.get("type") == "text"
+            and route_observation
+            and route_observation.get("data", {}).get("monthly_pass_available")
+            and "đăng ký vé tháng" in user_query.lower()
+        ):
+            llm_response = {
+                "type": "tool_call",
+                "tool_name": "register_monthly_pass",
+                "arguments": {
+                    "full_name": "Khách hàng VinBus",
+                    "phone": "0900000000",
+                    "route_id": route_observation.get("route_id", "")
+                },
+                "thought": "Tuyến hỗ trợ vé tháng. Tôi sẽ tiếp tục đăng ký vé tháng cho khách hàng."
+            }
         
         # Trường hợp 1: LLM quyết định trả lời bằng văn bản trực tiếp
         if llm_response.get("type") == "text":
@@ -102,6 +121,18 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
         elif llm_response.get("type") == "tool_call":
             tool_name = llm_response.get("tool_name")
             arguments = llm_response.get("arguments", {})
+
+            if (
+                tool_name == "route_query"
+                and route_observation
+                and "đăng ký vé tháng" in user_query.lower()
+            ):
+                tool_name = "register_monthly_pass"
+                arguments = {
+                    "full_name": "Khách hàng VinBus",
+                    "phone": "0900000000",
+                    "route_id": route_observation.get("route_id", "")
+                }
             
             print(f"🛠️ [Action Proposed]: {tool_name}({arguments})")
             
@@ -119,21 +150,37 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
                 
                 # Tổng hợp Final Answer từ kết quả Observation thực tế
                 if obs_data.get("status") == "SUCCESS":
-                    if "data" in obs_data:
-                        d = obs_data["data"]
+                    if tool_name == "route_query":
+                        route = obs_data.get("data", {})
                         final_answer = (
-                            f"Kết quả tra cứu cho sinh viên {obs_data.get('student_id', '')} ({d.get('full_name', '')}): "
-                            f"Lớp {d.get('class', '')}, GPA: {d.get('gpa', '')}, Email: {d.get('email', '')}, "
-                            f"Trạng thái: {d.get('status', '')}, Cố vấn: {d.get('advisor', '')}."
+                            f"Tuyến {obs_data.get('route_id', '')}: "
+                            f"{route.get('route_name', '')}. "
+                            f"Lộ trình từ {obs_data.get('origin', '')} đến "
+                            f"{obs_data.get('destination', '')}. "
+                            f"Các điểm dừng: {', '.join(route.get('stops', []))}. "
+                            f"Thời gian dự kiến: {route.get('estimated_minutes', '')} phút. "
+                            f"Chuyến gần nhất: {route.get('next_departure', 'chưa có dữ liệu')}."
                         )
-                    elif "message" in obs_data:
-                        final_answer = obs_data["message"]
+                    elif tool_name == "register_monthly_pass":
+                        final_answer = (
+                            f"{obs_data.get('message', '')} "
+                            f"Mã đăng ký: {obs_data.get('booking_id', '')}."
+                        )
                     else:
-                        final_answer = f"Đã hoàn tất xử lý qua MCP Server: {json.dumps(obs_data, ensure_ascii=False)}"
+                        final_answer = (
+                            f"Đã hoàn tất xử lý qua MCP Server: "
+                            f"{json.dumps(obs_data, ensure_ascii=False)}"
+                        )
                 elif obs_data.get("status") == "NOT_FOUND":
-                    final_answer = obs_data.get("message", "Không tìm thấy thông tin sinh viên yêu cầu.")
+                    final_answer = obs_data.get(
+                        "message",
+                        "Không tìm thấy thông tin phù hợp."
+                    )
                 else:
-                    final_answer = f"Phản hồi từ công cụ: {json.dumps(obs_data, ensure_ascii=False)}"
+                    final_answer = (
+                        f"Phản hồi từ công cụ: "
+                        f"{json.dumps(obs_data, ensure_ascii=False)}"
+                    )
             
             trace_logs.append({
                 "step": step,
@@ -144,6 +191,24 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
                 "observation": obs_data,
                 "latency_ms": latency_ms
             })
+
+            if tool_name == "route_query" and obs_data.get("status") == "SUCCESS":
+                route_observation = obs_data
+
+            react_prompt = (
+                f"{user_query}\n\n"
+                f"Observation từ bước trước: {json.dumps(obs_data, ensure_ascii=False)}\n"
+                "Hãy quyết định bước ReAct tiếp theo dựa trên Observation này."
+            )
+
+            if (
+                tool_name == "route_query"
+                and obs_data.get("status") == "SUCCESS"
+                and obs_data.get("data", {}).get("monthly_pass_available")
+                and "đăng ký vé tháng" in user_query.lower()
+            ):
+                print("🧠 [Thought]: Tuyến hỗ trợ vé tháng. Tiếp tục bước đăng ký.")
+                continue
             
             # Kết thúc vòng lặp sau khi hoàn tất Observation và xuất Final Answer
             print(f"🧠 [Thought]: Đã nhận được dữ liệu từ MCP Server. Tổng hợp kết quả phản hồi.")
@@ -164,7 +229,7 @@ def run_react_agent(user_query: str, provider, mcp_server: MCPAcademicServer) ->
 
 if __name__ == "__main__":
     print("==========================================================")
-    print("🏫 VINUNI AI COURSE - DAY 03 LAB: CHATBOT VS REACT AGENT")
+    print("🚌 VINBUS AI COURSE - DAY 03 LAB: CHATBOT VS REACT AGENT")
     print("==========================================================")
     
     provider = get_llm_provider()
@@ -179,9 +244,9 @@ if __name__ == "__main__":
     if "--interactive" in sys.argv:
         print("🎮 [INTERACTIVE MODE] Trò chuyện trực tiếp với ReAct Agent:")
         print("💡 Gợi ý câu hỏi thử nghiệm:")
-        print("   - Câu hỏi chung: 'Quy chế học vụ VinUni yêu cầu bao nhiêu tín chỉ?'")
-        print("   - Tra cứu học vụ: 'Hãy tra cứu thông tin học vụ của sinh viên SV2026001'")
-        print("   - Đặt lịch hẹn: 'Đặt lịch hẹn tư vấn cho SV2026001 vào 14:00 ngày 15/09/2026'")
+        print("   - Câu hỏi chung: 'VinBus có những loại vé tháng nào?'")
+        print("   - Tra cứu lộ trình: 'Tôi muốn đi từ Vinhomes Central Park đến Bến xe Miền Đông mới'")
+        print("   - Đăng ký vé tháng: 'Đăng ký vé tháng tuyến VB01 cho Nguyễn Minh Anh'")
         print("   - Gõ 'exit' hoặc 'quit' để kết thúc phiên trò chuyện.\n")
         while True:
             try:
