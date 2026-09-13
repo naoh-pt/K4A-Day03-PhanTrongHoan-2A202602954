@@ -23,7 +23,7 @@
   {
     "id": "TC04",
     "type": "multi_step_reasoning",
-    "question": "Tôi thường đi từ Landmark 81 đến Đại học Quốc gia TP.HCM. Hãy tìm tuyến VinBus phù hợp, kiểm tra lịch chuyến gần nhất và đăng ký vé tháng nếu tuyến đó hỗ trợ.",
+    "question": "Tôi là Nguyễn Minh Anh, số điện thoại 0901234567. Tôi thường đi từ Landmark 81 đến Đại học Quốc gia TP.HCM. Hãy tìm tuyến phù hợp và đăng ký vé tháng nếu tuyến đó hỗ trợ.",
     "expected_behavior": "Agent thực hiện chuỗi ReAct: tra cứu tuyến, kiểm tra lịch chuyến, xác nhận tuyến có hỗ trợ vé tháng, rồi thực hiện đăng ký nếu đủ điều kiện.",
     "complexity": "High"
   },
